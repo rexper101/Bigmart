@@ -16,17 +16,6 @@ from pathlib import Path
 RAW_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "BigMart_Sales_Dataset.csv"
 PROCESSED_PATH = Path(__file__).resolve().parent.parent / "data" / "processed" / "cleaned_data.csv"
 
-def clean_item_fat_content(df: pd.DataFrame) -> pd.DataFrame:
-    print("\nBefore cleaning, Item_Fat_Content categories:", df['Item_Fat_Content'].unique())
-    df['Item_Fat_Content'] = df['Item_Fat_Content'].replace({
-        'LF': 'Low Fat',
-        'low fat': 'Low Fat',
-        'reg': 'Regular'
-    })
-    print("After cleaning, Item_Fat_Content categories:", df['Item_Fat_Content'].unique())
-    return df
-
-
 def impute_item_weight(df: pd.DataFrame) -> pd.DataFrame:
     # A given product should weigh the same everywhere it is sold, so use the
     # mean weight recorded for that specific Item_Identifier first.
