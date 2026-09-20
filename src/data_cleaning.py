@@ -16,13 +16,6 @@ from pathlib import Path
 RAW_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "BigMart_Sales_Dataset.csv"
 PROCESSED_PATH = Path(__file__).resolve().parent.parent / "data" / "processed" / "cleaned_data.csv"
 
-
-def load_data(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path)
-    print(f"Loaded raw data: {df.shape[0]} rows, {df.shape[1]} columns")
-    return df
-
-
 def clean_item_fat_content(df: pd.DataFrame) -> pd.DataFrame:
     print("\nBefore cleaning, Item_Fat_Content categories:", df['Item_Fat_Content'].unique())
     df['Item_Fat_Content'] = df['Item_Fat_Content'].replace({
