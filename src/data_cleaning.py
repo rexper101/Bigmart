@@ -16,6 +16,53 @@ from pathlib import Path
 RAW_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "BigMart_Sales_Dataset.csv"
 PROCESSED_PATH = Path(__file__).resolve().parent.parent / "data" / "processed" / "cleaned_data.csv"
 
+
+def load_data(path: Path) -> pd.DataFrame:
+    df = pd.read_csv(path)
+    print(f"Loaded raw data: {df.shape[0]} rows, {df.shape[1]} columns")
+    return df
+
+
+def clean_item_fat_content(df: pd.DataFrame) -> pd.DataFrame:
+    print("\nBefore cleaning, Item_Fat_Content categories:", df['Item_Fat_Content'].unique())
+    df['Item_Fat_Content'] = df['Item_Fat_Content'].replace({
+        'LF': 'Low Fat',
+        'low fat': 'Low Fat',
+        'reg': 'Regular'
+    })
+    print("After cleaning, Item_Fat_Content categories:", df['Item_Fat_Content'].unique())
+    return df
+
+
+def impute_item_weight(df: pd.DataFrame) -> pd.DataFrame:
+    # A given product should weigh the same everywhere it is sold, so use the
+    # mean weight recorded for that specific Item_Identifier first.
+    item_weight_map = df.groupby('Item_Identifier')['Item_Weight'].mean()
+    df['Item_Weight'] = df.apply(
+        lambda r: item_weight_map.get(r['Item_Identifier'], np.nan) if pd.isna(r['Item_Weight']) else r['Item_Weight'],
+        axis=1
+    )
+    # Fallback: overall mean for any product that never had a recorded weight
+    df['Item_Weight'] = df['Item_Weight'].fillna(df['Item_Weight'].mean())
+    print(f"\nItem_Weight missing after imputation: {df['Item_Weight'].isnull().sum()}")
+    return df
+
+
+def impute_outlet_size(df: pd.DataFrame) -> pd.DataFrame:
+    mode_map = (df.dropna(subset=['Outlet_Size'])
+                  .groupby('Outlet_Type')['Outlet_Size']
+                  .agg(lambda x: x.mode()[0]))
+    print("\nMost common Outlet_Size per Outlet_Type:")
+    print(mode_map)
+
+    df['Outlet_Size'] = df.apply(
+        lambda r: mode_map.get(r['Outlet_Type'], 'Medium') if pd.isna(r['Outlet_Size']) else r['Outlet_Size'],
+        axis=1
+    )
+    print(f"\nOutlet_Size missing after imputation: {df['Outlet_Size'].isnull().sum()}")
+    return df
+
+
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df['Outlet_Age'] = 2013 - df['Outlet_Establishment_Year']
 
