@@ -16,21 +16,6 @@ from pathlib import Path
 RAW_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "BigMart_Sales_Dataset.csv"
 PROCESSED_PATH = Path(__file__).resolve().parent.parent / "data" / "processed" / "cleaned_data.csv"
 
-def impute_outlet_size(df: pd.DataFrame) -> pd.DataFrame:
-    mode_map = (df.dropna(subset=['Outlet_Size'])
-                  .groupby('Outlet_Type')['Outlet_Size']
-                  .agg(lambda x: x.mode()[0]))
-    print("\nMost common Outlet_Size per Outlet_Type:")
-    print(mode_map)
-
-    df['Outlet_Size'] = df.apply(
-        lambda r: mode_map.get(r['Outlet_Type'], 'Medium') if pd.isna(r['Outlet_Size']) else r['Outlet_Size'],
-        axis=1
-    )
-    print(f"\nOutlet_Size missing after imputation: {df['Outlet_Size'].isnull().sum()}")
-    return df
-
-
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df['Outlet_Age'] = 2013 - df['Outlet_Establishment_Year']
 
