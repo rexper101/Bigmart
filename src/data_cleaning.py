@@ -16,20 +16,6 @@ from pathlib import Path
 RAW_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "BigMart_Sales_Dataset.csv"
 PROCESSED_PATH = Path(__file__).resolve().parent.parent / "data" / "processed" / "cleaned_data.csv"
 
-def impute_item_weight(df: pd.DataFrame) -> pd.DataFrame:
-    # A given product should weigh the same everywhere it is sold, so use the
-    # mean weight recorded for that specific Item_Identifier first.
-    item_weight_map = df.groupby('Item_Identifier')['Item_Weight'].mean()
-    df['Item_Weight'] = df.apply(
-        lambda r: item_weight_map.get(r['Item_Identifier'], np.nan) if pd.isna(r['Item_Weight']) else r['Item_Weight'],
-        axis=1
-    )
-    # Fallback: overall mean for any product that never had a recorded weight
-    df['Item_Weight'] = df['Item_Weight'].fillna(df['Item_Weight'].mean())
-    print(f"\nItem_Weight missing after imputation: {df['Item_Weight'].isnull().sum()}")
-    return df
-
-
 def impute_outlet_size(df: pd.DataFrame) -> pd.DataFrame:
     mode_map = (df.dropna(subset=['Outlet_Size'])
                   .groupby('Outlet_Type')['Outlet_Size']
