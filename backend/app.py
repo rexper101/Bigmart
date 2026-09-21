@@ -149,24 +149,6 @@ def predict():
         "model_used": metadata["model_type"],
     })
 
-
-@app.route("/dataset", methods=["GET"])
-def dataset():
-    df = get_clean_dataset()
-    limit = request.args.get("limit", default=None, type=int)
-    offset = request.args.get("offset", default=0, type=int)
-
-    total = len(df)
-    subset = df.iloc[offset: offset + limit] if limit else df.iloc[offset:]
-
-    return jsonify({
-        "total_rows": total,
-        "returned_rows": len(subset),
-        "offset": offset,
-        "data": json.loads(subset.to_json(orient="records")),
-    })
-
-
 @app.route("/model_info", methods=["GET"])
 def model_info():
     return jsonify({
