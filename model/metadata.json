@@ -85,9 +85,9 @@
     },
     {
       "Model": "XGBoost",
-      "RMSE": 1033.55,
-      "MAE": 723.03,
-      "R2 Score": 0.607
+      "RMSE": 1033.99,
+      "MAE": 723.74,
+      "R2 Score": 0.6066
     },
     {
       "Model": "Linear Regression",
