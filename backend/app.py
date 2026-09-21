@@ -83,6 +83,90 @@ def get_clean_dataset():
         _dataset_cache = df
     return _dataset_cache
 
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok", "model_loaded": model is not None})
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    payload = request.get_json(force=True, silent=True)
+    if payload is None:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
+    required = ["Item_Weight", "Item_Visibility", "Item_MRP",
+                "Outlet_Establishment_Year", "Item_Fat_Content", "Item_Type",
+                "Outlet_Size", "Outlet_Location_Type", "Outlet_Type"]
+    missing = [f for f in required if f not in payload]
+    if missing:
+        return jsonify({"error": f"Missing required fields: {missing}"}), 400
+
+    # Validate categorical values against what the model was trained on
+    for col in ["Item_Fat_Content", "Item_Type", "Outlet_Size", "Outlet_Location_Type", "Outlet_Type"]:
+        if payload[col] not in CATEGORICAL_OPTIONS[col]:
+            return jsonify({
+                "error": f"Invalid value '{payload[col]}' for {col}. "
+                         f"Valid options: {CATEGORICAL_OPTIONS[col]}"
+            }), 400
+
+    try:
+        item_weight = float(payload["Item_Weight"])
+        item_visibility = float(payload["Item_Visibility"])
+        item_mrp = float(payload["Item_MRP"])
+        outlet_year = int(payload["Outlet_Establishment_Year"])
+    except (TypeError, ValueError):
+        return jsonify({"error": "Item_Weight, Item_Visibility, Item_MRP and "
+                                  "Outlet_Establishment_Year must be numeric"}), 400
+
+    outlet_age = REFERENCE_YEAR - outlet_year
+    item_category = categorize(payload["Item_Type"])
+
+    row = {
+        "Item_Weight": item_weight,
+        "Item_Visibility": item_visibility,
+        "Item_MRP": item_mrp,
+        "Outlet_Age": outlet_age,
+        "Item_Fat_Content": encoders["Item_Fat_Content"].transform([payload["Item_Fat_Content"]])[0],
+        "Item_Type": encoders["Item_Type"].transform([payload["Item_Type"]])[0],
+        "Outlet_Size": encoders["Outlet_Size"].transform([payload["Outlet_Size"]])[0],
+        "Outlet_Location_Type": encoders["Outlet_Location_Type"].transform([payload["Outlet_Location_Type"]])[0],
+        "Outlet_Type": encoders["Outlet_Type"].transform([payload["Outlet_Type"]])[0],
+        "Item_Category": encoders["Item_Category"].transform([item_category])[0],
+    }
+
+    X = pd.DataFrame([row])[FEATURE_COLS]
+    prediction = float(model.predict(X)[0])
+    prediction = max(prediction, 0.0)  # sales can't be negative
+
+    return jsonify({
+        "predicted_sales": round(prediction, 2),
+        "currency": "INR",
+        "derived_features": {
+            "Outlet_Age": outlet_age,
+            "Item_Category": item_category,
+        },
+        "model_used": metadata["model_type"],
+    })
+
+
+@app.route("/dataset", methods=["GET"])
+def dataset():
+    df = get_clean_dataset()
+    limit = request.args.get("limit", default=None, type=int)
+    offset = request.args.get("offset", default=0, type=int)
+
+    total = len(df)
+    subset = df.iloc[offset: offset + limit] if limit else df.iloc[offset:]
+
+    return jsonify({
+        "total_rows": total,
+        "returned_rows": len(subset),
+        "offset": offset,
+        "data": json.loads(subset.to_json(orient="records")),
+    })
+
+
 @app.route("/model_info", methods=["GET"])
 def model_info():
     return jsonify({
