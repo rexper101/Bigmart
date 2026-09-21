@@ -102,14 +102,6 @@ def predict():
     if missing:
         return jsonify({"error": f"Missing required fields: {missing}"}), 400
 
-    # Validate categorical values against what the model was trained on
-    for col in ["Item_Fat_Content", "Item_Type", "Outlet_Size", "Outlet_Location_Type", "Outlet_Type"]:
-        if payload[col] not in CATEGORICAL_OPTIONS[col]:
-            return jsonify({
-                "error": f"Invalid value '{payload[col]}' for {col}. "
-                         f"Valid options: {CATEGORICAL_OPTIONS[col]}"
-            }), 400
-
 @app.route("/model_info", methods=["GET"])
 def model_info():
     return jsonify({
