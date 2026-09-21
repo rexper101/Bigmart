@@ -83,11 +83,6 @@ def get_clean_dataset():
         _dataset_cache = df
     return _dataset_cache
 
-
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok", "model_loaded": model is not None})
-
 @app.route("/model_info", methods=["GET"])
 def model_info():
     return jsonify({
