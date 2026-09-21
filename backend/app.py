@@ -88,20 +88,6 @@ def get_clean_dataset():
 def health():
     return jsonify({"status": "ok", "model_loaded": model is not None})
 
-
-@app.route("/predict", methods=["POST"])
-def predict():
-    payload = request.get_json(force=True, silent=True)
-    if payload is None:
-        return jsonify({"error": "Request body must be valid JSON"}), 400
-
-    required = ["Item_Weight", "Item_Visibility", "Item_MRP",
-                "Outlet_Establishment_Year", "Item_Fat_Content", "Item_Type",
-                "Outlet_Size", "Outlet_Location_Type", "Outlet_Type"]
-    missing = [f for f in required if f not in payload]
-    if missing:
-        return jsonify({"error": f"Missing required fields: {missing}"}), 400
-
 @app.route("/model_info", methods=["GET"])
 def model_info():
     return jsonify({
