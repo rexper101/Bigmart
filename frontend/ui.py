@@ -181,19 +181,3 @@ elif page == "Dataset Explorer":
     st.plotly_chart(fig_cat, width='stretch')
 
 # ---------------------------------------------------------------------
-# Page 3: Model Insights
-# ---------------------------------------------------------------------
-else:
-    st.title("🤖 Model Insights")
-
-    m = info["metrics"]
-    col1, col2, col3 = st.columns(3)
-    col1.metric("R² Score", f"{m['R2']:.4f}")
-    col2.metric("RMSE", f"₹{m['RMSE']:,.2f}")
-    col3.metric("MAE", f"₹{m['MAE']:,.2f}")
-
-    st.subheader("Model Comparison")
-    results_df = pd.DataFrame(info["all_model_results"])
-    st.dataframe(results_df, width='stretch', hide_index=True)
-
-   
