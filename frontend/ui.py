@@ -174,10 +174,4 @@ elif page == "Dataset Explorer":
                                  title="Correlation Heatmap")
         st.plotly_chart(fig_heatmap, width='stretch')
 
-    st.subheader("Average Sales by Item Category")
-    cat_sales = df.groupby("Item_Category")["Item_Outlet_Sales"].mean().sort_values(ascending=False)
-    fig_cat = px.bar(cat_sales, orientation="h", title="Average Sales by Item Category",
-                      labels={"value": "Average Item Outlet Sales", "Item_Category": ""})
-    st.plotly_chart(fig_cat, width='stretch')
-
-# ---------------------------------------------------------------------
+   
