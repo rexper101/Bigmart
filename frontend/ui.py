@@ -196,8 +196,4 @@ else:
     results_df = pd.DataFrame(info["all_model_results"])
     st.dataframe(results_df, width='stretch', hide_index=True)
 
-    fig_compare = px.bar(results_df, x="Model", y="R2 Score", color="Model",
-                          title="Model Comparison — R² Score (higher is better)")
-    st.plotly_chart(fig_compare, width='stretch')
-
-  
+   
