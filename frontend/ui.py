@@ -163,4 +163,53 @@ elif page == "Dataset Explorer":
                                   opacity=0.5, title="Item MRP vs. Sales")
         st.plotly_chart(fig_scatter, width='stretch')
 
-   
+    with col2:
+        fig_box = px.box(df, x="Outlet_Type", y="Item_Outlet_Sales", color="Outlet_Type",
+                          title="Sales by Outlet Type")
+        st.plotly_chart(fig_box, width='stretch')
+
+        numeric_cols = ["Item_Weight", "Item_Visibility", "Item_MRP", "Outlet_Age", "Item_Outlet_Sales"]
+        corr = df[numeric_cols].corr()
+        fig_heatmap = px.imshow(corr, text_auto=".2f", color_continuous_scale="RdBu_r",
+                                 title="Correlation Heatmap")
+        st.plotly_chart(fig_heatmap, width='stretch')
+
+    st.subheader("Average Sales by Item Category")
+    cat_sales = df.groupby("Item_Category")["Item_Outlet_Sales"].mean().sort_values(ascending=False)
+    fig_cat = px.bar(cat_sales, orientation="h", title="Average Sales by Item Category",
+                      labels={"value": "Average Item Outlet Sales", "Item_Category": ""})
+    st.plotly_chart(fig_cat, width='stretch')
+
+# ---------------------------------------------------------------------
+# Page 3: Model Insights
+# ---------------------------------------------------------------------
+else:
+    st.title("🤖 Model Insights")
+
+    m = info["metrics"]
+    col1, col2, col3 = st.columns(3)
+    col1.metric("R² Score", f"{m['R2']:.4f}")
+    col2.metric("RMSE", f"₹{m['RMSE']:,.2f}")
+    col3.metric("MAE", f"₹{m['MAE']:,.2f}")
+
+    st.subheader("Model Comparison")
+    results_df = pd.DataFrame(info["all_model_results"])
+    st.dataframe(results_df, width='stretch', hide_index=True)
+
+    fig_compare = px.bar(results_df, x="Model", y="R2 Score", color="Model",
+                          title="Model Comparison — R² Score (higher is better)")
+    st.plotly_chart(fig_compare, width='stretch')
+
+    st.subheader(f"Feature Importance ({info['model_type']})")
+    importance = pd.Series(info["feature_importance"]).sort_values(ascending=True)
+    fig_importance = px.bar(importance, orientation="h",
+                             title="What drives predicted sales?",
+                             labels={"value": "Importance", "index": ""})
+    st.plotly_chart(fig_importance, width='stretch')
+
+    st.subheader("Diagnostics: Actual vs. Predicted & Residuals")
+    diagnostics_path = MODEL_DIR / "diagnostics.png"
+    if diagnostics_path.exists():
+        st.image(str(diagnostics_path), width='stretch')
+    else:
+        st.info("Run `python train_model.py` to generate diagnostics.png")
