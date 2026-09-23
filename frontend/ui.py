@@ -200,11 +200,4 @@ else:
                           title="Model Comparison — R² Score (higher is better)")
     st.plotly_chart(fig_compare, width='stretch')
 
-    st.subheader(f"Feature Importance ({info['model_type']})")
-    importance = pd.Series(info["feature_importance"]).sort_values(ascending=True)
-    fig_importance = px.bar(importance, orientation="h",
-                             title="What drives predicted sales?",
-                             labels={"value": "Importance", "index": ""})
-    st.plotly_chart(fig_importance, width='stretch')
-
-   
+  
