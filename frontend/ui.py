@@ -163,15 +163,4 @@ elif page == "Dataset Explorer":
                                   opacity=0.5, title="Item MRP vs. Sales")
         st.plotly_chart(fig_scatter, width='stretch')
 
-    with col2:
-        fig_box = px.box(df, x="Outlet_Type", y="Item_Outlet_Sales", color="Outlet_Type",
-                          title="Sales by Outlet Type")
-        st.plotly_chart(fig_box, width='stretch')
-
-        numeric_cols = ["Item_Weight", "Item_Visibility", "Item_MRP", "Outlet_Age", "Item_Outlet_Sales"]
-        corr = df[numeric_cols].corr()
-        fig_heatmap = px.imshow(corr, text_auto=".2f", color_continuous_scale="RdBu_r",
-                                 title="Correlation Heatmap")
-        st.plotly_chart(fig_heatmap, width='stretch')
-
    
