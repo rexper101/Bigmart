@@ -167,18 +167,3 @@ def dataset():
     })
 
 
-@app.route("/model_info", methods=["GET"])
-def model_info():
-    return jsonify({
-        "model_type": metadata["model_type"],
-        "metrics": metadata["metrics"],
-        "all_model_results": metadata["all_model_results"],
-        "feature_importance": metadata["feature_importance"],
-        "feature_cols": FEATURE_COLS,
-        "categorical_options": CATEGORICAL_OPTIONS,
-        "reference_year": REFERENCE_YEAR,
-    })
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
