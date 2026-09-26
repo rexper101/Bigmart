@@ -139,17 +139,6 @@ def predict():
     prediction = float(model.predict(X)[0])
     prediction = max(prediction, 0.0)  # sales can't be negative
 
-    return jsonify({
-        "predicted_sales": round(prediction, 2),
-        "currency": "INR",
-        "derived_features": {
-            "Outlet_Age": outlet_age,
-            "Item_Category": item_category,
-        },
-        "model_used": metadata["model_type"],
-    })
-
-
 
   
 
