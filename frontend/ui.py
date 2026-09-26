@@ -207,9 +207,4 @@ else:
                              labels={"value": "Importance", "index": ""})
     st.plotly_chart(fig_importance, width='stretch')
 
-    st.subheader("Diagnostics: Actual vs. Predicted & Residuals")
-    diagnostics_path = MODEL_DIR / "diagnostics.png"
-    if diagnostics_path.exists():
-        st.image(str(diagnostics_path), width='stretch')
-    else:
-        st.info("Run `python train_model.py` to generate diagnostics.png")
+  
