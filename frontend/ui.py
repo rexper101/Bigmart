@@ -9,6 +9,7 @@ Run (after starting the backend):
 UI opens at http://localhost:8501
 """
 
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -17,7 +18,7 @@ import plotly.graph_objects as go
 import requests
 import streamlit as st
 
-BACKEND_URL = "http://localhost:5000"
+BACKEND_URL = os.getenv("BIGMART_BACKEND_URL", "http://localhost:5000")
 MODEL_DIR = Path(__file__).resolve().parent.parent / "model"
 
 st.set_page_config(page_title="BigMart Sales Prediction", page_icon="🛒", layout="wide")
@@ -62,7 +63,14 @@ if not backend_alive():
     )
     st.stop()
 
-info = fetch_model_info()
+try:
+    info = fetch_model_info()
+except requests.exceptions.RequestException:
+    st.error(
+        "⚠️ The backend is reachable but model metadata is unavailable. "
+        "Run `python train_model.py` before starting the dashboard."
+    )
+    st.stop()
 
 # ---------------------------------------------------------------------
 # Page 1: Predict Sales

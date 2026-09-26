@@ -30,17 +30,46 @@ DATA_PATH = BASE_DIR / "data" / "BigMart_Sales_Dataset.csv"
 app = Flask(__name__)
 CORS(app)  # allow the Streamlit frontend (different port) to call this API
 
-# --- Load model artifacts once at startup ---
-model = joblib.load(MODEL_DIR / "model.pkl")
-encoders = joblib.load(MODEL_DIR / "encoders.pkl")
-with open(MODEL_DIR / "metadata.json") as f:
-    metadata = json.load(f)
 
-FEATURE_COLS = metadata["feature_cols"]
-NUMERIC_COLS = metadata["numeric_cols"]
-CATEGORICAL_COLS = metadata["categorical_cols"]
-CATEGORICAL_OPTIONS = metadata["categorical_options"]
-REFERENCE_YEAR = metadata["reference_year"]
+def validate_model_artifacts(base_dir: Path = MODEL_DIR) -> None:
+    """Ensure the training artifacts required for inference exist."""
+    required_files = [
+        base_dir / "model.pkl",
+        base_dir / "encoders.pkl",
+        base_dir / "metadata.json",
+    ]
+    missing = [str(path.relative_to(base_dir.parent)) for path in required_files if not path.exists()]
+    if missing:
+        joined = ", ".join(missing)
+        raise FileNotFoundError(
+            f"Missing required model artifacts: {joined}. Run `python train_model.py` to regenerate them."
+        )
+
+
+MODEL_ERROR = None
+model = None
+encoders = {}
+metadata = {}
+FEATURE_COLS = []
+NUMERIC_COLS = []
+CATEGORICAL_COLS = []
+CATEGORICAL_OPTIONS = {}
+REFERENCE_YEAR = 2013
+
+try:
+    validate_model_artifacts()
+    model = joblib.load(MODEL_DIR / "model.pkl")
+    encoders = joblib.load(MODEL_DIR / "encoders.pkl")
+    with open(MODEL_DIR / "metadata.json", encoding="utf-8") as f:
+        metadata = json.load(f)
+
+    FEATURE_COLS = metadata["feature_cols"]
+    NUMERIC_COLS = metadata["numeric_cols"]
+    CATEGORICAL_COLS = metadata["categorical_cols"]
+    CATEGORICAL_OPTIONS = metadata["categorical_options"]
+    REFERENCE_YEAR = metadata["reference_year"]
+except (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError) as exc:
+    MODEL_ERROR = str(exc)
 
 FOOD_TYPES = ["Dairy", "Meat", "Fruits and Vegetables", "Breakfast", "Seafood",
               "Starchy Foods", "Breads", "Frozen Foods", "Snack Foods",
@@ -86,11 +115,23 @@ def get_clean_dataset():
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "model_loaded": model is not None})
+    status = "ok" if model is not None else "degraded"
+    response = {
+        "status": status,
+        "model_loaded": model is not None,
+    }
+    if MODEL_ERROR:
+        response["error"] = MODEL_ERROR
+    return jsonify(response)
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    if model is None:
+        return jsonify({
+            "error": MODEL_ERROR or "Model is not available. Run `python train_model.py` first."
+        }), 503
+
     payload = request.get_json(force=True, silent=True)
     if payload is None:
         return jsonify({"error": "Request body must be valid JSON"}), 400
@@ -169,6 +210,11 @@ def dataset():
 
 @app.route("/model_info", methods=["GET"])
 def model_info():
+    if model is None:
+        return jsonify({
+            "error": MODEL_ERROR or "Model metadata is unavailable. Run `python train_model.py` first."
+        }), 503
+
     return jsonify({
         "model_type": metadata["model_type"],
         "metrics": metadata["metrics"],
