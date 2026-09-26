@@ -159,13 +159,7 @@ def dataset():
     total = len(df)
     subset = df.iloc[offset: offset + limit] if limit else df.iloc[offset:]
 
-    return jsonify({
-        "total_rows": total,
-        "returned_rows": len(subset),
-        "offset": offset,
-        "data": json.loads(subset.to_json(orient="records")),
-    })
-
+  
 
 
 
