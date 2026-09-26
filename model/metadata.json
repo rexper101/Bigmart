@@ -85,9 +85,9 @@
     },
     {
       "Model": "XGBoost",
-      "RMSE": 1033.99,
-      "MAE": 723.74,
-      "R2 Score": 0.6066
+      "RMSE": 1032.59,
+      "MAE": 722.37,
+      "R2 Score": 0.6077
     },
     {
       "Model": "Linear Regression",
@@ -98,14 +98,14 @@
   ],
   "feature_importance": {
     "Item_MRP": 0.5405,
-    "Outlet_Type": 0.3753,
-    "Outlet_Age": 0.054,
+    "Outlet_Type": 0.3766,
+    "Outlet_Age": 0.0528,
     "Item_Visibility": 0.011,
     "Item_Weight": 0.0105,
     "Item_Type": 0.0047,
     "Outlet_Location_Type": 0.0014,
     "Item_Fat_Content": 0.0012,
-    "Outlet_Size": 0.0012,
+    "Outlet_Size": 0.0011,
     "Item_Category": 0.0002
   },
   "reference_year": 2013
