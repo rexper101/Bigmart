@@ -135,8 +135,50 @@ def predict():
         "Item_Category": encoders["Item_Category"].transform([item_category])[0],
     }
 
- 
+    X = pd.DataFrame([row])[FEATURE_COLS]
+    prediction = float(model.predict(X)[0])
+    prediction = max(prediction, 0.0)  # sales can't be negative
+
+    return jsonify({
+        "predicted_sales": round(prediction, 2),
+        "currency": "INR",
+        "derived_features": {
+            "Outlet_Age": outlet_age,
+            "Item_Category": item_category,
+        },
+        "model_used": metadata["model_type"],
+    })
 
 
+@app.route("/dataset", methods=["GET"])
+def dataset():
+    df = get_clean_dataset()
+    limit = request.args.get("limit", default=None, type=int)
+    offset = request.args.get("offset", default=0, type=int)
+
+    total = len(df)
+    subset = df.iloc[offset: offset + limit] if limit else df.iloc[offset:]
+
+    return jsonify({
+        "total_rows": total,
+        "returned_rows": len(subset),
+        "offset": offset,
+        "data": json.loads(subset.to_json(orient="records")),
+    })
 
 
+@app.route("/model_info", methods=["GET"])
+def model_info():
+    return jsonify({
+        "model_type": metadata["model_type"],
+        "metrics": metadata["metrics"],
+        "all_model_results": metadata["all_model_results"],
+        "feature_importance": metadata["feature_importance"],
+        "feature_cols": FEATURE_COLS,
+        "categorical_options": CATEGORICAL_OPTIONS,
+        "reference_year": REFERENCE_YEAR,
+    })
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
