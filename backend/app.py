@@ -150,14 +150,6 @@ def predict():
     })
 
 
-@app.route("/dataset", methods=["GET"])
-def dataset():
-    df = get_clean_dataset()
-    limit = request.args.get("limit", default=None, type=int)
-    offset = request.args.get("offset", default=0, type=int)
-
-    total = len(df)
-    subset = df.iloc[offset: offset + limit] if limit else df.iloc[offset:]
 
   
 
