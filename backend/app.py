@@ -135,12 +135,7 @@ def predict():
         "Item_Category": encoders["Item_Category"].transform([item_category])[0],
     }
 
-    X = pd.DataFrame([row])[FEATURE_COLS]
-    prediction = float(model.predict(X)[0])
-    prediction = max(prediction, 0.0)  # sales can't be negative
-
-
-  
+ 
 
 
 
