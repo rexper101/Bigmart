@@ -210,7 +210,4 @@ def main():
 
     
 
-    plt.tight_layout()
-    plt.savefig(MODEL_DIR / "diagnostics.png", dpi=120)
-    plt.close()
-
+    
