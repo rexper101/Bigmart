@@ -153,14 +153,6 @@ def main():
         models["XGBoost"] = xgbm
         results.append(evaluate("XGBoost", xgbm))
 
-    results_df = pd.DataFrame(results).sort_values("R2 Score", ascending=False).reset_index(drop=True)
-    print("\nModel comparison:")
-    print(results_df.to_string(index=False))
-
-    best_name = results_df.iloc[0]["Model"]
-    best_model = models[best_name]
-    best_metrics = results_df.iloc[0].to_dict()
-    print(f"\nBest model: {best_name}")
 
    
     
