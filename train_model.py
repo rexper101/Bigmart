@@ -218,8 +218,3 @@ def main():
     plt.savefig(MODEL_DIR / "diagnostics.png", dpi=120)
     plt.close()
 
-    print(f"\n✅ Saved model.pkl, encoders.pkl, metadata.json, model_results.csv, diagnostics.png to {MODEL_DIR}")
-
-
-if __name__ == "__main__":
-    main()
