@@ -153,6 +153,73 @@ def main():
         models["XGBoost"] = xgbm
         results.append(evaluate("XGBoost", xgbm))
 
+    results_df = pd.DataFrame(results).sort_values("R2 Score", ascending=False).reset_index(drop=True)
+    print("\nModel comparison:")
+    print(results_df.to_string(index=False))
 
-   
-    
+    best_name = results_df.iloc[0]["Model"]
+    best_model = models[best_name]
+    best_metrics = results_df.iloc[0].to_dict()
+    print(f"\nBest model: {best_name}")
+
+    # Feature importance (tree models only)
+    if hasattr(best_model, "feature_importances_"):
+        importances = pd.Series(best_model.feature_importances_, index=FEATURE_COLS) \
+                        .sort_values(ascending=False)
+    else:
+        importances = pd.Series(np.abs(best_model.coef_), index=FEATURE_COLS) \
+                        .sort_values(ascending=False)
+
+    # --- Save artifacts ---
+    joblib.dump(best_model, MODEL_DIR / "model.pkl")
+    joblib.dump(encoders, MODEL_DIR / "encoders.pkl")
+
+    metadata = {
+        "model_type": best_name,
+        "feature_cols": FEATURE_COLS,
+        "numeric_cols": NUMERIC_COLS,
+        "categorical_cols": CATEGORICAL_COLS,
+        "categorical_options": categorical_options,
+        "metrics": {
+            "RMSE": best_metrics["RMSE"],
+            "MAE": best_metrics["MAE"],
+            "R2": best_metrics["R2 Score"],
+        },
+        "all_model_results": results_df.to_dict(orient="records"),
+        "feature_importance": importances.round(4).to_dict(),
+        "reference_year": 2013,
+    }
+    with open(MODEL_DIR / "metadata.json", "w") as f:
+        json.dump(metadata, f, indent=2)
+
+    results_df.to_csv(MODEL_DIR / "model_results.csv", index=False)
+
+    # --- Diagnostics plot: actual vs predicted + residuals ---
+    pred_test = best_model.predict(X_test)
+    residuals = y_test - pred_test
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    axes[0].scatter(y_test, pred_test, alpha=0.4, color="steelblue", edgecolor="none")
+    lims = [0, max(y_test.max(), pred_test.max())]
+    axes[0].plot(lims, lims, "r--", linewidth=1.5, label="Perfect prediction")
+    axes[0].set_xlabel("Actual Sales")
+    axes[0].set_ylabel("Predicted Sales")
+    axes[0].set_title(f"Actual vs. Predicted ({best_name})")
+    axes[0].legend()
+
+    axes[1].hist(residuals, bins=40, color="darkorange", edgecolor="white")
+    axes[1].axvline(0, color="red", linestyle="--", linewidth=1.5)
+    axes[1].set_xlabel("Residual (Actual − Predicted)")
+    axes[1].set_ylabel("Count")
+    axes[1].set_title("Residual Distribution")
+
+    plt.tight_layout()
+    plt.savefig(MODEL_DIR / "diagnostics.png", dpi=120)
+    plt.close()
+
+    print(f"\n✅ Saved model.pkl, encoders.pkl, metadata.json, model_results.csv, diagnostics.png to {MODEL_DIR}")
+
+
+if __name__ == "__main__":
+    main()
