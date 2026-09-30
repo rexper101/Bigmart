@@ -194,19 +194,6 @@ def main():
 
     results_df.to_csv(MODEL_DIR / "model_results.csv", index=False)
 
-    # --- Diagnostics plot: actual vs predicted + residuals ---
-    pred_test = best_model.predict(X_test)
-    residuals = y_test - pred_test
-
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-
-    axes[0].scatter(y_test, pred_test, alpha=0.4, color="steelblue", edgecolor="none")
-    lims = [0, max(y_test.max(), pred_test.max())]
-    axes[0].plot(lims, lims, "r--", linewidth=1.5, label="Perfect prediction")
-    axes[0].set_xlabel("Actual Sales")
-    axes[0].set_ylabel("Predicted Sales")
-    axes[0].set_title(f"Actual vs. Predicted ({best_name})")
-    axes[0].legend()
 
     
 
