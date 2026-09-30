@@ -208,11 +208,7 @@ def main():
     axes[0].set_title(f"Actual vs. Predicted ({best_name})")
     axes[0].legend()
 
-    axes[1].hist(residuals, bins=40, color="darkorange", edgecolor="white")
-    axes[1].axvline(0, color="red", linestyle="--", linewidth=1.5)
-    axes[1].set_xlabel("Residual (Actual − Predicted)")
-    axes[1].set_ylabel("Count")
-    axes[1].set_title("Residual Distribution")
+    
 
     plt.tight_layout()
     plt.savefig(MODEL_DIR / "diagnostics.png", dpi=120)
