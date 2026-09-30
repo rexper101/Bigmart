@@ -174,27 +174,6 @@ def main():
     joblib.dump(best_model, MODEL_DIR / "model.pkl")
     joblib.dump(encoders, MODEL_DIR / "encoders.pkl")
 
-    metadata = {
-        "model_type": best_name,
-        "feature_cols": FEATURE_COLS,
-        "numeric_cols": NUMERIC_COLS,
-        "categorical_cols": CATEGORICAL_COLS,
-        "categorical_options": categorical_options,
-        "metrics": {
-            "RMSE": best_metrics["RMSE"],
-            "MAE": best_metrics["MAE"],
-            "R2": best_metrics["R2 Score"],
-        },
-        "all_model_results": results_df.to_dict(orient="records"),
-        "feature_importance": importances.round(4).to_dict(),
-        "reference_year": 2013,
-    }
-    with open(MODEL_DIR / "metadata.json", "w") as f:
-        json.dump(metadata, f, indent=2)
 
-    results_df.to_csv(MODEL_DIR / "model_results.csv", index=False)
-
-
-    
 
     
