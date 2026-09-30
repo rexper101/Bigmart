@@ -162,18 +162,5 @@ def main():
     best_metrics = results_df.iloc[0].to_dict()
     print(f"\nBest model: {best_name}")
 
-    # Feature importance (tree models only)
-    if hasattr(best_model, "feature_importances_"):
-        importances = pd.Series(best_model.feature_importances_, index=FEATURE_COLS) \
-                        .sort_values(ascending=False)
-    else:
-        importances = pd.Series(np.abs(best_model.coef_), index=FEATURE_COLS) \
-                        .sort_values(ascending=False)
-
-    # --- Save artifacts ---
-    joblib.dump(best_model, MODEL_DIR / "model.pkl")
-    joblib.dump(encoders, MODEL_DIR / "encoders.pkl")
-
-
-
+   
     
